@@ -9,9 +9,9 @@ on:
       - 'main'
 
 env:
-  AZURE_WEBAPP_NAME: APITest # nombre de tu Azure Web App
-  AZURE_WEBAPP_PACKAGE_PATH: '.' # ruta de salida del paquete de la app
-  DOTNET_VERSION: '8.0.x' # versión de .NET
+  AZURE_WEBAPP_NAME: APITest
+  AZURE_WEBAPP_PACKAGE_PATH: '.' 
+  DOTNET_VERSION: '8.0.x'
 
 jobs:
   build-and-deploy:
@@ -26,17 +26,17 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore NuGet packages
-        run: dotnet restore
+        run: dotnet restore APIWeb/APIWeb.sln
 
       - name: Build the project
-        run: dotnet build --configuration Release
+        run: dotnet build APIWeb/APIWeb.sln --configuration Release
 
       - name: Publish the project
-        run: dotnet publish -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH}}/myapp
+        run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }} # nombre de la app en Azure
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PROFILE}} # secreto con el perfil de publicación
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PROFILE }}
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
