@@ -3,10 +3,10 @@ name: Deploy Api to Azure
 on:
   push:
     branches:
-      - release
+      - main
   pull_request:
     branches:
-      - 'release'
+      - 'main'
 
 env:
   AZURE_WEBAPP_NAME: APITest # nombre de tu Azure Web App
