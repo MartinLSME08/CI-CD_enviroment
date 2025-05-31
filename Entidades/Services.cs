@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Modelo
 {
-    internal class Services
-    {
+    
         public class AlumnoService : IAlumno
         {
             private readonly Context _context;
@@ -59,4 +58,3 @@ namespace Modelo
             }
         }
     }
-}
