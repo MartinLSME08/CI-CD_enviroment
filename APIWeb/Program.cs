@@ -14,20 +14,11 @@ builder.Services.AddSwaggerGen();
 //contruir aplicacion web a partir del builder, con configuraciones y servicios
 var app = builder.Build();
 
-// Si el ambiente es Desarrollo o Producción, activa Swagger.
-if (app.Environment.IsDevelopment() || app.Environment.IsProduction() )
-{
+//Configurción de Swagger   
     //habila la generación del JSON OpenAPI
-    app.UseSwagger();
+        app.UseSwagger();
     //habilita la interfaz gráfica en el navegador
-    app.UseSwaggerUI();
-}
-
-//fuerza que todas las peticiones HTTP se redirijan a HTTPS
-app.UseHttpsRedirection();
-
-// Habilita el middleware de autorización en la aplicación.
-app.UseAuthorization();
+        app.UseSwaggerUI();
 
 //Mapea los controladores a las rutas de la aplicación.
     /// Esto permite que las peticiones HTTP sean dirigidas a los métodos correspondientes en los controladores.
