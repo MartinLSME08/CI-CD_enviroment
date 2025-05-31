@@ -1,25 +1,37 @@
+//constructor de la aplicación ASP.NET Core
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Agregar servicios de contorladores MVC al contenedor de inyección de dependencias para manejar peticiones HTTP.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Configuración de Swagger para probar api 
+    // Configurar explorador de endpoints de la API 
 builder.Services.AddEndpointsApiExplorer();
+    //Agregar generador de Swagger para especificación y UI 
 builder.Services.AddSwaggerGen();
 
+//contruir aplicacion web a partir del builder, con configuraciones y servicios
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Si el ambiente es Desarrollo o Producción, activa Swagger.
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction() )
 {
+    //habila la generación del JSON OpenAPI
     app.UseSwagger();
+    //habilita la interfaz gráfica en el navegador
     app.UseSwaggerUI();
 }
 
+//fuerza que todas las peticiones HTTP se redirijan a HTTPS
 app.UseHttpsRedirection();
 
+// Habilita el middleware de autorización en la aplicación.
 app.UseAuthorization();
 
+//Mapea los controladores a las rutas de la aplicación.
+    /// Esto permite que las peticiones HTTP sean dirigidas a los métodos correspondientes en los controladores.
 app.MapControllers();
 
+//Ejecuta aplicacion y pone el servidor a la escucha de peticiones HTTP.
 app.Run();
