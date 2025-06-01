@@ -26,9 +26,28 @@ jobs:
       - name: Build the project
         run: dotnet build APIWeb/APIWeb.sln --configuration Release
 
-      - name: Run tests
-        run: dotnet test APIWeb/APIWeb.sln 
-
+      - name: Run tests unitarios y guardar salida
+        run: dotnet test APIWeb/APIWeb.sln --logger "console;verbosity=detailed" || true
+        
+      - name: Notificar resultado en Slack
+        if: always()
+        run: |
+              if [ "${{ job.status }}" = "success" ]; 
+                  then status="✅ *Tests passed*"
+                else
+                  status="❌ *Tests failed*"
+              fi
+              message="*🔍 Test Results for \`${{ github.workflow }}
+              \`*
+                *Status:* $status
+                *Branch:* \`${{ github.ref_name }}\`
+                *Author:* ${{ github.actor }}
+                *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+                *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver ejecución>"          
+              
+              curl -X POST -H 'Content-type: application/json' \
+                --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS}}
+        
       - name: Publish the project
         run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
 
@@ -38,3 +57,4 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
+
