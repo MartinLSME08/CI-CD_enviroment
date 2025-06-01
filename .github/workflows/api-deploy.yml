@@ -72,19 +72,13 @@ jobs:
               run: dotnet tool install --global dotnet-sonarscanner
           
             - name: SonarCloud - Begin Analysis
-              run: |
-                  dotnet sonarscanner begin /
-                    /k:"${{ env.SONAR_PROJECT_KEY }}" /
-                    /o:"${{ env.SONAR_ORG }}" /
-                    /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
-            - name: SonarCloud - Begin Analysis
-              run: dotnet sonarscanner begin /k:"env.SONAR_PROJECT_KEY" /o:"SONAR_ORG" /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-
+              run: dotnet tool run dotnet-sonarscanner begin /k:"${{ env.SONAR_PROJECT_KEY }}" /o:"${{ env.SONAR_ORG }}" / /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
+            
             - name: Build for SonarCloud
               run: dotnet build APIWeb/APIWeb.sln --configuration Release
               
             - name: SonarCloud - End Analysis
-              run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
+              run: dotnet tool run dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
             
   test:
     name: 🧪 Tests unitarios
