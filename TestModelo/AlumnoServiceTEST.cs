@@ -5,33 +5,38 @@ namespace TestModelo
 {
     public class AlumnoServiceTEST
     {
-        private readonly DbContextOptions<Context> _context;
+        //private readonly DbContextOptionsBuilder<Context> _context;
+        private readonly Context _context;
         private readonly IAlumno _alumnoService;
 
         public AlumnoServiceTEST()
         {
-            _context = new DbContextOptions<Context>();
+            //Configurar Base de Datos en Memoria para Pruebas Unitarias
 
-            using var context = new Context();
+            //_context = new DbContextOptionsBuilder<Context>()
+            //                                                  .UseInMemoryDatabase("ServicesTesting");
+
+             var _context = new Context();
 
                 for (int i = 1; i <= 10; i++)
                 {
-                    context.Alumnos.Add(new Alumno
+                    _context.Alumnos.Add(new Alumno
                     {
                         Legajo = i,
                         Nombre = "Martin" + i,
                         Apellido = "Lopez Soto" + i,
                         Email = "martinls0" + i + "@gmail.com",
                         Telefono = "3777-" + i.ToString()
+
                     });
-                
-                    context.SaveChanges();
+                    
                 }
-                context.Database.EnsureDeleted();  
-                context.Database.EnsureCreated();
+                _context.SaveChanges();
 
+                _context.Database.EnsureDeleted();  
+                _context.Database.EnsureCreated();
 
-            _alumnoService = new AlumnoService(context);
+                _alumnoService = new AlumnoService(_context);
         }
 
         [Fact]
