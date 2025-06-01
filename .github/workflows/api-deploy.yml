@@ -1,12 +1,7 @@
 name: Deploy Api to Azure
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - 'main'
+  [push]
 
 env:
   AZURE_WEBAPP_NAME: APITest
@@ -30,6 +25,9 @@ jobs:
 
       - name: Build the project
         run: dotnet build APIWeb/APIWeb.sln --configuration Release
+
+      - name: Run tests
+        run: dotnet test APIWeb/APIWeb.sln ---no-build
 
       - name: Publish the project
         run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
