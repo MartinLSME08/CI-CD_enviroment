@@ -34,11 +34,9 @@ jobs:
         if: always()
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
-          SLACK_TITLE: "🧪 Resultado de tests unitarios"
-          SLACK_COLOR: ${{ job.status == 'success' && 'good' || (job.status == 'failure' && 'danger' || '#cccccc') }}
+          SLACK_TITLE: "🧪 Resultado de pipelines"
           SLACK_MESSAGE: |
             *🔍 Workflow:* `${{ github.workflow }}`
-            *🧪 Status:* ${{ job.status == 'success' && '✅ Tests passed' || '❌ Tests failed' }}
             *🌿 Rama:* `${{ github.ref_name }}`
             *👤 Autor:* `${{ github.actor }}`
             *📦 Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
