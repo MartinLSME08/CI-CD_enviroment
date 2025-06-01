@@ -1,11 +1,11 @@
 name: CI/CD API con notificaciones
 
 on:
-  [push]
+  push:
 
 env:
   AZURE_WEBAPP_NAME: APITest
-  AZURE_WEBAPP_PACKAGE_PATH: '.' 
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
   DOTNET_VERSION: '8.0.x'
 
 jobs:
@@ -49,6 +49,62 @@ jobs:
             *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
             *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
 
+  sonar-analysis:
+    name: 🔎 Análisis SonarCloud
+    runs-on: windows-latest
+    needs: build
+    env:
+      SONAR_ORG: martinlsme08
+      SONAR_PROJECT_KEY: MartinLSME08_CI-CD_enviroment
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore packages
+        run: dotnet restore APIWeb/APIWeb.sln
+
+      - name: Install SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: SonarCloud - Begin Analysis
+        run: dotnet-sonarscanner begin /k:"${{ env.SONAR_PROJECT_KEY }}" /o:"${{ env.SONAR_ORG }}" /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
+      
+
+      - name: Build for SonarCloud
+        run: dotnet build APIWeb/APIWeb.sln --configuration Release
+
+      - name: SonarCloud - End Analysis
+        run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
+
+  notify-sonar-link:
+        name: 📎 Notificar resultados de Análisis de Codigo
+        runs-on: ubuntu-latest
+        needs: sonar-analysis
+        if: always()
+        steps:
+          - name: Extraer link del análisis desde los logs
+            id: link
+            run: |
+              # Accedemos al último log del análisis
+              LOG_URL="https://sonarcloud.io/dashboard?id=MartinLSME08_CI-CD_enviroment&branch=${GITHUB_REF_NAME}&resolved=false"
+              echo "url=$LOG_URL" >> $GITHUB_OUTPUT
+          - name: Enviar link a Slack
+            uses: rtCamp/action-slack-notify@v2
+            env:
+                SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
+                SLACK_TITLE: "🔍 SonarCloud Resultado"
+                SLACK_COLOR: "#439FE0"
+                SLACK_MESSAGE: |
+                  *🔍 Resultado de análisis SonarCloud*
+                  *Branch:* `${{ github.ref_name }}`
+                  *Autor:* `${{ github.actor }}`
+                  *Link:* <${{ steps.link.outputs.url }}|Ver análisis en SonarCloud>
   test:
     name: 🧪 Tests unitarios
     runs-on: windows-latest
@@ -94,8 +150,7 @@ jobs:
   deploy:
     name: 🚀 Deploy a Azure
     runs-on: windows-latest
-    needs: test
-    if: needs.test.result == 'success'
+    needs: [test, sonar-analysis]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -133,3 +188,4 @@ jobs:
             *Autor:* `${{ github.actor }}`
             *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
             *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
+
