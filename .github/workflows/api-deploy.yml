@@ -31,20 +31,22 @@ jobs:
         
       - name: Notificar resultado en Slack
         if: always()
+        shell: pwsh
         run: |
-            if [[ "${{ job.status }}" == "success" ]]; then
-              status="✅ *Tests passed*"
-            else
-              status="❌ *Tests failed*"
-            fi
-            message="*🔍 Test Results for \`${{ github.workflow }}\`*
+            if ("${{ job.status }}" -eq "success") {
+              $status = "✅ *Tests passed*"
+            } else {
+              $status = "❌ *Tests failed*"
+            }
+      
+            $message = @"
+            *🔍 Test Results for `${{ github.workflow }}`*
             *Status:* $status
-            *Branch:* \`${{ github.ref_name }}\`
+            *Branch:* `${{ github.ref_name }}`
             *Author:* ${{ github.actor }}
             *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
-            *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver ejecución>"
-            curl -X POST -H 'Content-type: application/json' \
-               --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
+            *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver ejecución>
+            "@curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
         
       - name: Publish the project
         run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
