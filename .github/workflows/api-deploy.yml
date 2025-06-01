@@ -27,7 +27,7 @@ jobs:
         run: dotnet build APIWeb/APIWeb.sln --configuration Release
 
       - name: Run tests
-        run: dotnet test APIWeb/APIWeb.sln ---no-build
+        run: dotnet test APIWeb/APIWeb.sln --no-build
 
       - name: Publish the project
         run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
