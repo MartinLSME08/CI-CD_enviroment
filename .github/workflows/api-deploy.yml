@@ -29,25 +29,21 @@ jobs:
       - name: Run tests unitarios y guardar salida
         run: dotnet test APIWeb/APIWeb.sln --logger "console;verbosity=detailed" || true
         
-      - name: Notificar resultado en Slack
+      - name: Notificar en Slack (resultado de tests)
+        uses: rtCamp/action-slack-notify@v2
         if: always()
-        shell: pwsh
-        run: |
-            if ("${{ job.status }}" -eq "success") {
-              $status = "✅ *Tests passed*"
-            } else {
-              $status = "❌ *Tests failed*"
-            }
-      
-            $message = @"
-            *🔍 Test Results for `${{ github.workflow }}`*
-            *Status:* $status
-            *Branch:* `${{ github.ref_name }}`
-            *Author:* ${{ github.actor }}
-            *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
-            *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver ejecución>
-            "@curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$message\"}" ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
-        
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
+          SLACK_TITLE: "🧪 Resultado de tests unitarios"
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || (job.status == 'failure' && 'danger' || '#cccccc') }}
+          SLACK_MESSAGE: |
+            *🔍 Workflow:* `${{ github.workflow }}`
+            *🧪 Status:* ${{ job.status == 'success' && '✅ Tests passed' || '❌ Tests failed' }}
+            *🌿 Rama:* `${{ github.ref_name }}`
+            *👤 Autor:* `${{ github.actor }}`
+            *📦 Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+            *🔗 Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver ejecución>
+
       - name: Publish the project
         run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
 
