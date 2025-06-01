@@ -16,25 +16,27 @@ namespace TestModelo
             //_context = new DbContextOptionsBuilder<Context>()
             //                                                  .UseInMemoryDatabase("ServicesTesting");
 
-             var _context = new Context();
+             _context = new Context();
 
-                for (int i = 1; i <= 10; i++)
+            _context.Database.EnsureDeleted();  
+            _context.Database.EnsureCreated();
+
+            for (int i = 1; i <= 10; i++)
                 {
                     _context.Alumnos.Add(new Alumno
                     {
                         Legajo = i,
-                        Nombre = "Martin" + i,
-                        Apellido = "Lopez Soto" + i,
-                        Email = "martinls0" + i + "@gmail.com",
+                        Nombre = "Martin" + i.ToString(),
+                        Apellido = "Lopez Soto" + i.ToString(),
+                        Email = "martinls0" + i.ToString() + "@gmail.com",
                         Telefono = "3777-" + i.ToString()
 
-                    });
-                    
+                    });   
                 }
+
                 _context.SaveChanges();
 
-                _context.Database.EnsureDeleted();  
-                _context.Database.EnsureCreated();
+              
 
                 _alumnoService = new AlumnoService(_context);
         }
@@ -103,14 +105,15 @@ namespace TestModelo
         public async Task DeleteAlumno_ReturnsDeletedAlumno()
         {
             // Arrange
-            int legajo = 2;
+            int legajo = 1;
 
             // Act
             var result = await _alumnoService.Delete(legajo);
 
             // Assert
-            Assert.NotNull(result);
             Assert.Equal(legajo, result.Legajo);
+            Assert.NotNull(result);
+            
         }
     }
 
