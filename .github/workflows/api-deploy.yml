@@ -81,7 +81,30 @@ jobs:
 
       - name: SonarCloud - End Analysis
         run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
-    
+
+  notify-sonar-link:
+        name: 📎 Notificar resultados de Análisis de Codigo
+        runs-on: ubuntu-latest
+        needs: sonar-analysis
+        if: always()
+        steps:
+          - name: Extraer link del análisis desde los logs
+            id: link
+            run: |
+              # Accedemos al último log del análisis
+              LOG_URL="https://sonarcloud.io/dashboard?id=MartinLSME08_CI-CD_enviroment&branch=${GITHUB_REF_NAME}&resolved=false"
+              echo "url=$LOG_URL" >> $GITHUB_OUTPUT
+          - name: Enviar link a Slack
+            uses: rtCamp/action-slack-notify@v2
+            env:
+                SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
+                SLACK_TITLE: "🔍 SonarCloud Resultado"
+                SLACK_COLOR: "#439FE0"
+                SLACK_MESSAGE: |
+                  *🔍 Resultado de análisis SonarCloud*
+                  *Branch:* `${{ github.ref_name }}`
+                  *Autor:* `${{ github.actor }}`
+                  *Link:* <${{ steps.link.outputs.url }}|Ver análisis en SonarCloud>
   test:
     name: 🧪 Tests unitarios
     runs-on: windows-latest
