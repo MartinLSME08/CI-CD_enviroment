@@ -150,8 +150,7 @@ jobs:
   deploy:
     name: 🚀 Deploy a Azure
     runs-on: windows-latest
-    needs: test
-    if: needs.test.result == 'success'
+    needs: [test, sonar-analysis]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
