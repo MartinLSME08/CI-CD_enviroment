@@ -10,7 +10,7 @@ env:
 
 jobs:
   build:
-    name: 🔧 Build
+    name: 🔧Build
     runs-on: windows-latest
     outputs:
       build_status: ${{ steps.build-step.outcome }}
@@ -31,7 +31,7 @@ jobs:
         run: dotnet build APIWeb/APIWeb.sln --configuration Release
 
   notify-build-failure:
-    name: ❌ Notificar fallo de build
+    name: ❌Notificar fallo de build
     runs-on: ubuntu-latest
     needs: build
     if: needs.build.result == 'failure'
@@ -50,7 +50,7 @@ jobs:
             *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
 
   sonar-analysis:
-    name: 🔎 Análisis SonarCloud
+    name: 🔎Análisis SonarCloud
     runs-on: windows-latest
     needs: build
     env:
@@ -83,7 +83,7 @@ jobs:
         run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
 
   notify-sonar-link:
-        name: 📎 Notificar resultados de Análisis de Codigo
+        name: 📎 Notificar resultados de SonarCloud
         runs-on: ubuntu-latest
         needs: sonar-analysis
         if: always()
@@ -106,7 +106,7 @@ jobs:
                   *Autor:* `${{ github.actor }}`
                   *Link:* <${{ steps.link.outputs.url }}|Ver análisis en SonarCloud>
   test:
-    name: 🧪 Tests unitarios
+    name: 🧪Tests
     runs-on: windows-latest
     needs: build
     if: needs.build.result == 'success'
@@ -129,7 +129,7 @@ jobs:
         run: dotnet test APIWeb/APIWeb.sln --logger "console;verbosity=normal"
 
   notify-test-failure:
-    name: ❌ Notificar fallo de tests
+    name: ❌Notificar fallo de tests
     runs-on: ubuntu-latest
     needs: test
     if: needs.test.result == 'failure'
@@ -148,9 +148,10 @@ jobs:
             *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
 
   deploy:
-    name: 🚀 Deploy a Azure
+    name: 🚀Deploy a Azure
     runs-on: windows-latest
     needs: [test]
+    environment: Development
     if: ${{ needs.test.result == 'success' }}
     steps:
       - name: Checkout
