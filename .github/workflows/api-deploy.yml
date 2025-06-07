@@ -151,6 +151,7 @@ jobs:
     name: 🚀 Deploy a Azure
     runs-on: windows-latest
     needs: [test]
+    environment: Development
     if: ${{ needs.test.result == 'success' }}
     steps:
       - name: Checkout
