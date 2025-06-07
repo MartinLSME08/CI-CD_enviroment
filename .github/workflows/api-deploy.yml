@@ -23,12 +23,19 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+            path: ~/.nuget/packages
+            key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+            restore-keys: |
+              nuget-${{ runner.os }}-
       - name: Restore
         run: dotnet restore APIWeb/APIWeb.sln
 
       - name: Build
         id: build-step
-        run: dotnet build APIWeb/APIWeb.sln --configuration Release
+        run: dotnet build APIWeb/APIWeb.sln --configuration Release --no-restore
 
   notify-build-failure:
     name: ❌Notificar fallo de build
@@ -66,8 +73,13 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore packages
-        run: dotnet restore APIWeb/APIWeb.sln
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+            path: ~/.nuget/packages
+            key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+            restore-keys: |
+              nuget-${{ runner.os }}-
 
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -75,9 +87,8 @@ jobs:
       - name: SonarCloud - Begin Analysis
         run: dotnet-sonarscanner begin /k:"${{ env.SONAR_PROJECT_KEY }}" /o:"${{ env.SONAR_ORG }}" /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}" /d:sonar.coverage.exclusions="**/*"
       
-
       - name: Build for SonarCloud
-        run: dotnet build APIWeb/APIWeb.sln --configuration Release
+        run: dotnet build APIWeb/APIWeb.sln --configuration Release --no-restore
 
       - name: SonarCloud - End Analysis
         run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
@@ -121,12 +132,17 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore
-        run: dotnet restore APIWeb/APIWeb.sln
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+            path: ~/.nuget/packages
+            key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+            restore-keys: |
+              nuget-${{ runner.os }}-
 
       - name: Run tests
         id: test-step
-        run: dotnet test APIWeb/APIWeb.sln --logger "console;verbosity=normal"
+        run: dotnet test APIWeb/APIWeb.sln --logger "console;verbosity=normal"--no-restore
 
   notify-test-failure:
     name: ❌Notificar fallo de tests
@@ -163,7 +179,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Publish
-        run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
+        run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp --no-restore 
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
