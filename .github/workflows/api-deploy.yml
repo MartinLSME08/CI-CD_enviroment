@@ -5,7 +5,7 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: APITest
-  AZURE_WEBAPP_PACKAGE_PATH: '.'
+  #AZURE_WEBAPP_PACKAGE_PATH: '.'
   DOTNET_VERSION: '8.0.x'
 
 jobs:
@@ -176,7 +176,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PROFILE }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
+          package: ./publish
 
   notify-deploy-success:
     name: ✅ Notificar deploy exitoso
