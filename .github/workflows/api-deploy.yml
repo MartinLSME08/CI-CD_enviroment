@@ -5,13 +5,13 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: APITest
-  AZURE_WEBAPP_PACKAGE_PATH: '.'
+  #AZURE_WEBAPP_PACKAGE_PATH: '.'
   DOTNET_VERSION: '8.0.x'
 
 jobs:
   build:
     name: 🔧Build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     outputs:
       build_status: ${{ steps.build-step.outcome }}
     steps:
@@ -22,13 +22,22 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
+      
       - name: Restore
         run: dotnet restore APIWeb/APIWeb.sln
 
       - name: Build
         id: build-step
         run: dotnet build APIWeb/APIWeb.sln --configuration Release
+
+      - name: Publish
+        run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ./publish --no-restore
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish
+          path: ./publish
 
   notify-build-failure:
     name: ❌Notificar fallo de build
@@ -51,7 +60,7 @@ jobs:
 
   sonar-analysis:
     name: 🔎Análisis SonarCloud
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     env:
       SONAR_ORG: martinlsme08
@@ -64,7 +73,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore packages
         run: dotnet restore APIWeb/APIWeb.sln
@@ -75,9 +84,8 @@ jobs:
       - name: SonarCloud - Begin Analysis
         run: dotnet-sonarscanner begin /k:"${{ env.SONAR_PROJECT_KEY }}" /o:"${{ env.SONAR_ORG }}" /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}" /d:sonar.coverage.exclusions="**/*"
       
-
       - name: Build for SonarCloud
-        run: dotnet build APIWeb/APIWeb.sln --configuration Release
+        run: dotnet build APIWeb/APIWeb.sln --configuration Release --no-restore
 
       - name: SonarCloud - End Analysis
         run: dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONARCLOUD_ACCESSTOKEN }}"
@@ -107,7 +115,7 @@ jobs:
                   *Link:* <${{ steps.link.outputs.url }}|Ver análisis en SonarCloud>
   test:
     name: 🧪Tests
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     if: needs.build.result == 'success'
     outputs:
@@ -121,12 +129,12 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore
+      - name: Restore packages
         run: dotnet restore APIWeb/APIWeb.sln
 
       - name: Run tests
         id: test-step
-        run: dotnet test APIWeb/APIWeb.sln --logger "console;verbosity=normal"
+        run: dotnet test APIWeb/APIWeb.sln 
 
   notify-test-failure:
     name: ❌Notificar fallo de tests
@@ -149,7 +157,7 @@ jobs:
 
   deploy:
     name: 🚀Deploy a Azure
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: [test]
     environment: Development
     if: ${{ needs.test.result == 'success' }}
@@ -157,20 +165,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+      - name: Download artifact
+        uses: actions/download-artifact@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Publish
-        run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
-
+          name: publish
+          path: ./publish
+      
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PROFILE }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp
+          package: ./publish
 
   notify-deploy-success:
     name: ✅ Notificar deploy exitoso
