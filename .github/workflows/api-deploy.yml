@@ -22,21 +22,13 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-            path: ~/.nuget/packages
-            key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-            restore-keys: |
-              nuget-${{ runner.os }}-
       
       - name: Restore
         run: dotnet restore APIWeb/APIWeb.sln
 
       - name: Build
         id: build-step
-        run: dotnet build APIWeb/APIWeb.sln --configuration Release --no-restore
+        run: dotnet build APIWeb/APIWeb.sln --configuration Release
 
   notify-build-failure:
     name: ❌Notificar fallo de build
@@ -73,14 +65,6 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-            path: ~/.nuget/packages
-            key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-            restore-keys: |
-              nuget-${{ runner.os }}-
 
       - name: Restore packages
         run: dotnet restore APIWeb/APIWeb.sln
@@ -136,20 +120,12 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-            path: ~/.nuget/packages
-            key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-            restore-keys: |
-              nuget-${{ runner.os }}-
-
       - name: Restore packages
         run: dotnet restore APIWeb/APIWeb.sln
 
       - name: Run tests
         id: test-step
-        run: dotnet test APIWeb/APIWeb.sln --no-restore
+        run: dotnet test APIWeb/APIWeb.sln 
 
   notify-test-failure:
     name: ❌Notificar fallo de tests
@@ -185,19 +161,11 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-            path: ~/.nuget/packages
-            key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-            restore-keys: |
-              nuget-${{ runner.os }}-
-
       - name: Restore packages
         run: dotnet restore APIWeb/APIWeb.sln
 
       - name: Publish
-        run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp --no-restore
+        run: dotnet publish APIWeb/APIWeb.csproj -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp 
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
