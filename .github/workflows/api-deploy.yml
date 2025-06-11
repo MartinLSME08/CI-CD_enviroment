@@ -52,11 +52,8 @@ jobs:
           SLACK_TITLE: "❌ Fallo de Build"
           SLACK_COLOR: danger
           SLACK_MESSAGE: |
-            *🔧 Build fallida*
             *Branch:* `${{ github.ref_name }}`
             *Autor:* `${{ github.actor }}`
-            *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
-            *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
 
   test:
     name: 🧪Tests
@@ -93,11 +90,8 @@ jobs:
           SLACK_TITLE: "❌ Fallo en tests unitarios"
           SLACK_COLOR: danger
           SLACK_MESSAGE: |
-            *🧪 Tests fallidos*
             *Branch:* `${{ github.ref_name }}`
             *Autor:* `${{ github.actor }}`
-            *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
-            *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
 
   sonar-analysis:
     name: 🔎Análisis SonarCloud
@@ -190,10 +184,7 @@ jobs:
           SLACK_TITLE: "✅ Deploy exitoso"
           SLACK_COLOR: good
           SLACK_MESSAGE: |
-            *🚀 Deploy realizado correctamente*
             *Branch:* `${{ github.ref_name }}`
             *Autor:* `${{ github.actor }}`
-            *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
-            *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
             *Deploy URL:* <${{ secrets.AZURE_DEPLOY_DEVELOP }}|Ver aplicación en Azure> 
 
