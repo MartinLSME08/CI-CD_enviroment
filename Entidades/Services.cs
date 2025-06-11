@@ -27,7 +27,6 @@ namespace Modelo
             {
                 // no deja asincrono, revisar
                 var usuarios = _context.Alumnos.ToList();
-                return (usuarios);
             }
 
             public async Task<Alumno>? GetAlumno(int legajo)
