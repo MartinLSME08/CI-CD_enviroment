@@ -20,14 +20,15 @@ namespace Modelo
             {
                 _context.Alumnos.Add(alumno);
                 await _context.SaveChangesAsync();
-                return alumno;
+                return (alumno);
             }
 
             public async Task<IEnumerable<Alumno>>? GetAllAlumnos()
             {
                 // no deja asincrono, revisar
                 var usuarios = _context.Alumnos.ToList();
-                return (usuarios);
+
+                return(usuarios);
             }
 
             public async Task<Alumno>? GetAlumno(int legajo)
