@@ -58,10 +58,51 @@ jobs:
             *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
             *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
 
+  test:
+    name: 🧪Tests
+    runs-on: ubuntu-latest
+    needs: build
+    if: needs.build.result == 'success'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore packages
+        run: dotnet restore APIWeb/APIWeb.sln
+
+      - name: Run tests
+        id: test-step
+        run: dotnet test APIWeb/APIWeb.sln 
+
+  notify-test-failure:
+    name: ❌Notificar fallo de tests
+    runs-on: ubuntu-latest
+    needs: test
+    if: always() #aseguro que se ejecute incluso si los tests fallan
+    steps:
+      - name: Notificar fallo de tests
+        if: needs.test.result == 'failure'
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
+          SLACK_TITLE: "❌ Fallo en tests unitarios"
+          SLACK_COLOR: danger
+          SLACK_MESSAGE: |
+            *🧪 Tests fallidos*
+            *Branch:* `${{ github.ref_name }}`
+            *Autor:* `${{ github.actor }}`
+            *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+            *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
+
   sonar-analysis:
     name: 🔎Análisis SonarCloud
     runs-on: ubuntu-latest
-    needs: build
+    needs: test
     env:
       SONAR_ORG: martinlsme08
       SONAR_PROJECT_KEY: MartinLSME08_CI-CD_enviroment
@@ -112,46 +153,6 @@ jobs:
                   *Branch:* `${{ github.ref_name }}`
                   *Autor:* `${{ github.actor }}`
                   *Link:* <${{ steps.link.outputs.url }}|Ver análisis en SonarCloud>
-  test:
-    name: 🧪Tests
-    runs-on: ubuntu-latest
-    needs: build
-    if: needs.build.result == 'success'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Restore packages
-        run: dotnet restore APIWeb/APIWeb.sln
-
-      - name: Run tests
-        id: test-step
-        run: dotnet test APIWeb/APIWeb.sln 
-
-  notify-test-failure:
-    name: ❌Notificar fallo de tests
-    runs-on: ubuntu-latest
-    needs: [build, test]
-    if: always() #aseguro que se ejecute incluso si los tests fallan
-    steps:
-      - name: Notificar fallo de tests
-        if: needs.test.result == 'failure'
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
-          SLACK_TITLE: "❌ Fallo en tests unitarios"
-          SLACK_COLOR: danger
-          SLACK_MESSAGE: |
-            *🧪 Tests fallidos*
-            *Branch:* `${{ github.ref_name }}`
-            *Autor:* `${{ github.actor }}`
-            *Commit:* <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
-            *Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver en GitHub>
 
   deploy:
     name: 🚀Deploy a Azure
