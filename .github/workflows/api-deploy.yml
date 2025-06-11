@@ -1,7 +1,9 @@
 name: CI/CD API con notificaciones
 
 on:
-  push:
+  pull_request:
+    branches:
+      - develop
 
 env:
   AZURE_WEBAPP_NAME: APITest
