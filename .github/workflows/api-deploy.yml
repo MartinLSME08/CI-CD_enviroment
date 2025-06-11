@@ -12,8 +12,7 @@ jobs:
   build:
     name: 🔧Build
     runs-on: ubuntu-latest
-    outputs:
-      build_status: ${{ steps.build-step.outcome }}
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,9 +42,10 @@ jobs:
     name: ❌Notificar fallo de build
     runs-on: ubuntu-latest
     needs: build
-    if: needs.build.result == 'failure'
+    if: always() #aseguro que se ejecute incluso si el build falla
     steps:
       - name: Notificar fallo de build
+        if: needs.build.result == 'failure'
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
