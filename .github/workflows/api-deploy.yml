@@ -94,7 +94,6 @@ jobs:
         name: 📎 Notificar resultados de SonarCloud
         runs-on: ubuntu-latest
         needs: sonar-analysis
-        if: always()
         steps:
           - name: Extraer link del análisis desde los logs
             id: link
