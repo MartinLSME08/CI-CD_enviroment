@@ -17,10 +17,10 @@ jobs:
     
     steps:
       - name: Checkout 
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 #Baja Repositorio
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v3 #Instala SDK
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
@@ -136,7 +136,7 @@ jobs:
             id: link
             run: #Extraer Link del ultimo analisis 
               | 
-              LOG_URL="https://sonarcloud.io/dashboard?id=MartinLSME08_CI-CD_enviroment&branch=${GITHUB_REF_NAME}&resolved=false"
+              LOG_URL="https://sonarcloud.io/dashboard?id=MartinLSME08_CI-CD_enviroment&pullRequest=${{GITHUB.EVENT.pull_request.number}}"
               echo "url=$LOG_URL" >> $GITHUB_OUTPUT
             
           - name: Enviar link a Slack
