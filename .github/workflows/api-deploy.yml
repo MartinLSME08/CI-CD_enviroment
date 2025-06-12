@@ -1,4 +1,4 @@
-name: CI/CD API con notificaciones
+name: Entorno de Integración Continua
 
 on:
   pull_request:
@@ -12,11 +12,11 @@ env:
 
 jobs:
   build:
-    name: 🔧Build
+    name: 🔧Compilación
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout
+      - name: Checkout 
         uses: actions/checkout@v4
 
       - name: Setup .NET
@@ -47,7 +47,7 @@ jobs:
     if: always() #aseguro que se ejecute incluso si el build falla
     steps:
       - name: Notificar fallo de build
-        if: needs.build.result == 'failure'
+        if: needs.build.result == 'failure' ##solo notifico si falla la compilación
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
@@ -60,7 +60,7 @@ jobs:
   test:
     name: 🧪Tests
     runs-on: ubuntu-latest
-    needs: build
+    needs: build ##dependencia de job build, no se ejecuta si el build falla
     if: needs.build.result == 'success'
     steps:
       - name: Checkout
@@ -85,7 +85,7 @@ jobs:
     if: always() #aseguro que se ejecute incluso si los tests fallan
     steps:
       - name: Notificar fallo de tests
-        if: needs.test.result == 'failure'
+        if: needs.test.result == 'failure' ##solo notifico si los test fallan
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_PIPELINERESULTS }}
@@ -134,10 +134,11 @@ jobs:
         steps:
           - name: Extraer link del análisis desde los logs
             id: link
-            run: |
-              # Accedemos al último log del análisis
+            run: #Extraer Link del ultimo analisis 
+              | 
               LOG_URL="https://sonarcloud.io/dashboard?id=MartinLSME08_CI-CD_enviroment&branch=${GITHUB_REF_NAME}&resolved=false"
               echo "url=$LOG_URL" >> $GITHUB_OUTPUT
+            
           - name: Enviar link a Slack
             uses: rtCamp/action-slack-notify@v2
             env:
