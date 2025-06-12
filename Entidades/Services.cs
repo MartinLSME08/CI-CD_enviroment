@@ -20,7 +20,7 @@ namespace Modelo
             {
                 _context.Alumnos.Add(alumno);
                 await _context.SaveChangesAsync();
-                return (alumno);
+                return (null);
             }
 
             public async Task<IEnumerable<Alumno>>? GetAllAlumnos()
